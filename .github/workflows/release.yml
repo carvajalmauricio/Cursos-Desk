@@ -1,5 +1,11 @@
 name: Publicar instalador
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag existente que se va a compilar
+        required: true
+        type: string
   push:
     tags: ['v*']
 permissions:
@@ -7,8 +13,12 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -17,10 +27,11 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
-          if ($env:GITHUB_REF_NAME -ne "v$version") { throw 'El tag no coincide con package.json' }
+          if ($env:RELEASE_TAG -ne "v$version") { throw 'El tag no coincide con package.json' }
       - run: npm ci
       - run: npm test
-      - run: npm run dist
+      - run: npm run build
+      - run: npx electron-builder --win nsis --publish never
       - name: Publicar Release y checksum
         shell: pwsh
         env:
@@ -29,7 +40,7 @@ jobs:
           $installer = Get-ChildItem release/CursoDesk-Instalador-*.exe | Select-Object -First 1
           $hash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLower()
           "$hash  $($installer.Name)" | Set-Content release/SHA256SUMS.txt -Encoding ascii
-          gh release view $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY 2>$null
+          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY 2>$null
           if ($LASTEXITCODE -eq 0) { Write-Output 'La Release ya existe; se conservan sus archivos.'; exit 0 }
-          gh release create $env:GITHUB_REF_NAME $installer.FullName release/SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --verify-tag --title "CursoDesk $($env:GITHUB_REF_NAME.TrimStart('v'))" --generate-notes
+          gh release create $env:RELEASE_TAG $installer.FullName release/SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --verify-tag --title "CursoDesk $($env:RELEASE_TAG.TrimStart('v'))" --generate-notes
           if ($LASTEXITCODE -ne 0) { throw 'No se pudo publicar la Release' }

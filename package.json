@@ -11,7 +11,7 @@
     "dev": "vite",
     "test": "node --test tests/core.test.cjs",
     "test:ui": "node tests/smoke.cjs",
-    "dist": "npm run build && electron-builder --win nsis",
+    "dist": "npm run build && electron-builder --win nsis --publish never",
     "test:player": "node tests/player-smoke.cjs",
     "test:visual": "node tests/visual-smoke.cjs"
   },

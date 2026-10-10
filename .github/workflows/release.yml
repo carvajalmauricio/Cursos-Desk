@@ -1,0 +1,35 @@
+name: Publicar instalador
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Comprobar versión
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_NAME -ne "v$version") { throw 'El tag no coincide con package.json' }
+      - run: npm ci
+      - run: npm test
+      - run: npm run dist
+      - name: Publicar Release y checksum
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $installer = Get-ChildItem release/CursoDesk-Instalador-*.exe | Select-Object -First 1
+          $hash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLower()
+          "$hash  $($installer.Name)" | Set-Content release/SHA256SUMS.txt -Encoding ascii
+          gh release view $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY 2>$null
+          if ($LASTEXITCODE -eq 0) { Write-Output 'La Release ya existe; se conservan sus archivos.'; exit 0 }
+          gh release create $env:GITHUB_REF_NAME $installer.FullName release/SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --verify-tag --title "CursoDesk $($env:GITHUB_REF_NAME.TrimStart('v'))" --generate-notes
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudo publicar la Release' }

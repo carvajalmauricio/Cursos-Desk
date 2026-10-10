@@ -1,0 +1,24 @@
+name: Comprobaciones
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: choco install ffmpeg --no-progress -y
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run test:ui
+      - run: npm run test:player
+      - run: npm run test:visual
+      - run: node tests/root-smoke.cjs

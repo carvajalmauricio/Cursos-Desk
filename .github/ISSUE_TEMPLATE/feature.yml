@@ -1,0 +1,9 @@
+name: Proponer una mejora
+description: Comparte una necesidad o idea.
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Qué necesitas y cómo lo resolverías
+    validations:
+      required: true

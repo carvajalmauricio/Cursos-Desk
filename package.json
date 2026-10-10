@@ -1,0 +1,73 @@
+{
+  "name": "curso-desk",
+  "version": "1.1.0",
+  "description": "Biblioteca personal de cursos locales",
+  "author": "Mauricio",
+  "private": true,
+  "main": "electron/main.cjs",
+  "scripts": {
+    "build": "vite build",
+    "start": "npm run build && electron .",
+    "dev": "vite",
+    "test": "node --test tests/core.test.cjs",
+    "test:ui": "node tests/smoke.cjs",
+    "dist": "npm run build && electron-builder --win nsis",
+    "test:player": "node tests/player-smoke.cjs",
+    "test:visual": "node tests/visual-smoke.cjs"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sql.js": "^1.13.0",
+    "mammoth": "^1.10.0",
+    "dompurify": "^3.3.0",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.0.0",
+    "playwright": "^1.56.0"
+  },
+  "build": {
+    "appId": "personal.cursodesk",
+    "productName": "CursoDesk",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/sql.js/dist/sql-wasm.wasm"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "CursoDesk-Instalador-${version}.${ext}"
+    }
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/carvajalmauricio/Cursos-Desk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carvajalmauricio/Cursos-Desk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/carvajalmauricio/Cursos-Desk/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

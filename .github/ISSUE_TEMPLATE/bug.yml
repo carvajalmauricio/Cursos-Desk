@@ -1,0 +1,22 @@
+name: Informar de un fallo
+description: Describe un problema de CursoDesk.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qué ocurrió y qué esperabas
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducirlo
+      description: Usa nombres ficticios y evita compartir cursos privados.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versión de CursoDesk y Windows
+    validations:
+      required: true
